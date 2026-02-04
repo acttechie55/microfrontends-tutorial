@@ -4,3 +4,8 @@ export interface StatCard {
   change: string;
   trend: 'positive' | 'negative';
 }
+
+export interface MonthlyData {
+  month: string;
+  percentage: number;
+}

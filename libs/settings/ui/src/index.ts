@@ -1,1 +1,1 @@
-export * from './lib/settings-ui/settings-ui';
+// Settings domain uses shared UI components directly

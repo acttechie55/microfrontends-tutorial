@@ -4,7 +4,7 @@ This file provides context so an AI assistant can pick up where the last session
 
 ## What This Project Is
 
-An Angular Micro Frontend dashboard built as a learning exercise. The developer is a 10+ year Angular veteran who has only worked on classic (monolithic, NgModule-based) Angular apps and is using this project to learn Module Federation.
+An Angular Micro Frontend dashboard built as a learning exercise. The developer is a 10+ year Angular veteran and UX Engineer who has only worked on classic (monolithic, NgModule-based) Angular apps and is using this project to learn Module Federation and MFE UI architecture.
 
 ## Tech Stack
 
@@ -18,10 +18,10 @@ An Angular Micro Frontend dashboard built as a learning exercise. The developer 
 
 **Host/Remote pattern:**
 - `apps/shell` (port 4200) -- host app with sidebar navigation and `<router-outlet>`
-- `apps/user-profile` (port 4201) -- remote, profile card
-- `apps/analytics` (port 4202) -- remote, stat cards + bar chart
-- `apps/settings` (port 4203) -- remote, toggle switches and dropdowns using FormsModule
-- `apps/notifications` (port 4204) -- remote, simple test page (created by the user as an exercise)
+- `apps/user-profile` (port 4201) -- remote, profile card with data from AuthService
+- `apps/analytics` (port 4202) -- remote, stat cards + bar chart from AnalyticsService
+- `apps/settings` (port 4203) -- remote, toggle switches and dropdown from SettingsService
+- `apps/notifications` (port 4204) -- remote, notification list with mark-as-read from NotificationsService
 
 The shell loads remotes dynamically at runtime via `loadRemoteModule()` in its route config. Remote URLs are defined in `apps/shell/public/federation.manifest.json`.
 
@@ -40,31 +40,79 @@ apps/
 
 libs/
   shared/
-    ui/                         # Scaffolded, placeholder components
-    models/                     # User, Notification, StatCard interfaces
+    ui/
+      design-tokens.css         # CSS custom properties (35+ tokens for colors, spacing, etc.)
+      card/                     # CardComponent - content projection wrapper with card styling
+      page-header/              # PageHeaderComponent - input.required<string>() for title
+      stat-card/                # StatCardComponent - inputs: label, value, change, trend
+      toggle/                   # ToggleComponent - model<boolean>() for two-way signal binding
+    models/                     # User, Notification, StatCard, MonthlyData interfaces
     util/                       # formatCurrency, formatNumber helpers
-    data-access/                # ApiService placeholder (uses inject(HttpClient))
+    data-access/                # ApiService (uses inject(HttpClient))
     auth/                       # AuthService with mock currentUser signal
-  {domain}/                     # user-profile, analytics, settings, notifications
-    feature/                    # Entry component (the actual page content)
-    ui/                         # Scaffolded, empty
-    data-access/                # Scaffolded, empty
+  user-profile/
+    feature/                    # Entry component - injects AuthService, uses computed initials
+    ui/                         # (uses shared UI components directly)
+    data-access/                # (user data provided by shared/auth)
+  analytics/
+    feature/                    # Entry component - injects AnalyticsService, uses @for loop
+    ui/                         # BarChartComponent - input.required<MonthlyData[]>()
+    data-access/                # AnalyticsService - stats signal + monthlyData signal
+  settings/
+    feature/                    # Entry component - injects SettingsService, uses ToggleComponent
+    ui/                         # (uses shared UI components directly)
+    data-access/                # SettingsService - darkMode, emailNotifications, pushNotifications, language signals
+  notifications/
+    feature/                    # Entry component - injects NotificationsService, accessible click handlers
+    ui/                         # (uses shared UI components directly)
+    data-access/                # NotificationsService - notifications signal, unreadCount computed, markAsRead/markAllAsRead
 ```
+
+## Design System Architecture
+
+Three layers:
+
+1. **Design Tokens** (`libs/shared/ui/src/lib/design-tokens.css`): CSS custom properties for all visual values. Imported by each app's `styles.css` via `@import`. Tokens include:
+   - Colors: `--color-primary`, `--color-bg-card`, `--color-text-primary`, `--color-success`, `--color-danger`, etc.
+   - Spacing: `--spacing-xs` through `--spacing-xl`
+   - Radii: `--radius-sm`, `--radius-md`, `--radius-lg`, `--radius-full`
+   - Typography: `--font-size-xs` through `--font-size-stat`, `--font-family`
+   - Shadows: `--shadow-card`
+   - Transitions: `--transition-default`, `--transition-fast`
+   - Layout: `--sidebar-width`
+
+2. **Shared UI Components** (`libs/shared/ui/`): Presentational components using tokens. All use `lib-` selector prefix. Exported via barrel `index.ts`.
+
+3. **Domain Services** (`libs/*/data-access/`): Signal-based services with `providedIn: 'root'`. Feature components inject these and pass data to shared UI components.
 
 ## Key File Locations
 
 ### Shell (Host)
 - `apps/shell/src/app/app.routes.ts` -- route config with `loadRemoteModule()` calls
 - `apps/shell/src/app/app.html` -- sidebar layout with nav links
-- `apps/shell/src/app/app.css` -- sidebar styling
+- `apps/shell/src/app/app.css` -- sidebar styling (uses design tokens)
 - `apps/shell/public/federation.manifest.json` -- maps remote names to URLs
 - `apps/shell/federation.config.js` -- no exposes, just shareAll
 
 ### Remotes (same pattern for each)
 - `apps/{remote}/federation.config.js` -- exposes `./routes` pointing to `./apps/{remote}/src/app/remote-entry/routes.ts`
 - `apps/{remote}/src/app/remote-entry/routes.ts` -- imports EntryComponent from `@mfe-dashboard/{remote}/feature`
-- `libs/{remote}/feature/src/lib/entry.component.ts` -- the actual component code
+- `libs/{remote}/feature/src/lib/entry.component.ts` -- the actual component code (thin orchestrator)
 - `libs/{remote}/feature/src/index.ts` -- barrel export of EntryComponent
+
+### Design System
+- `libs/shared/ui/src/lib/design-tokens.css` -- central CSS custom properties
+- `libs/shared/ui/src/lib/card/card.component.ts` -- CardComponent
+- `libs/shared/ui/src/lib/page-header/page-header.component.ts` -- PageHeaderComponent
+- `libs/shared/ui/src/lib/stat-card/stat-card.component.ts` -- StatCardComponent
+- `libs/shared/ui/src/lib/toggle/toggle.component.ts` -- ToggleComponent
+- `libs/analytics/ui/src/lib/bar-chart/bar-chart.component.ts` -- BarChartComponent
+
+### Domain Services
+- `libs/analytics/data-access/src/lib/analytics.service.ts` -- AnalyticsService
+- `libs/settings/data-access/src/lib/settings.service.ts` -- SettingsService
+- `libs/notifications/data-access/src/lib/notifications.service.ts` -- NotificationsService
+- `libs/shared/auth/src/lib/auth.service.ts` -- AuthService
 
 ### Config
 - `tsconfig.base.json` -- contains 17 path aliases (`@mfe-dashboard/shared/ui`, `@mfe-dashboard/user-profile/feature`, etc.)
@@ -109,10 +157,11 @@ npx nx graph                       # Visualize project dependency graph
 3. **federation.config.js paths**: The `exposes` paths in each remote's `federation.config.js` are relative to the workspace root (e.g., `./apps/user-profile/src/app/remote-entry/routes.ts`). The Nx move generator doesn't update these because they're plain JS, not TypeScript imports.
 4. **Selector prefixes**: Components in `libs/` use `lib-` prefix (e.g., `lib-analytics-entry`). Components in `apps/` use `app-` prefix.
 5. **Unused `_` warnings**: The `main.ts` files in each app have `.then(_ => import('./bootstrap'))` which triggers a no-unused-vars warning. This is cosmetic and from the native federation init pattern.
+6. **`export type` in models barrel**: `libs/shared/models/src/index.ts` must use `export type` (not `export`) because `isolatedModules` is enabled. Pure interface re-exports require the `type` keyword.
 
 ## What's Complete
 
-All 8 phases of the restructuring plan are done:
+### Phase A: Restructuring (8 steps)
 1. Moved apps into `apps/` directory
 2. Generated 5 shared libraries
 3. Generated 12 domain libraries (feature, ui, data-access per domain)
@@ -122,14 +171,21 @@ All 8 phases of the restructuring plan are done:
 7. Added `npm run start:all` script
 8. Verified: all 5 apps build, all 27 projects pass lint, all 5 apps serve correctly
 
+### Phase B: Design System Refactor (6 steps)
+1. Created design tokens (`design-tokens.css`) with 35+ CSS custom properties; imported in all 5 app `styles.css` files; updated shell `app.css` to use token variables
+2. Built 4 shared UI components: CardComponent (content projection), PageHeaderComponent (title input), StatCardComponent (metric display), ToggleComponent (two-way signal binding via `model()`)
+3. Created 3 domain data-access services: AnalyticsService (stats + monthly data signals), SettingsService (preference signals), NotificationsService (notifications signal + computed unreadCount + markAsRead/markAllAsRead)
+4. Created BarChartComponent in analytics/ui; cleaned up all domain UI scaffold directories
+5. Refactored all 4 entry components to be thin orchestrators: inject services, compose shared UI, use `@for` control flow, all CSS uses `var(--token)` references
+6. Cleaned up 12 scaffold placeholder directories; fixed module boundary violation (MonthlyData moved to shared/models), `export type` for isolatedModules, accessibility on notification items; verified lint (0 errors), build (all 5 pass), serve (all 5 respond)
+
 ## What Could Be Done Next
 
-- Populate the domain `ui/` and `data-access/` libraries with extracted components and services (currently scaffolded but empty)
-- Have the entry components use the shared models and auth service instead of hardcoded data
-- Add real HTTP calls in data-access services
-- Add unit tests
-- Add e2e tests with Playwright
-- Implement inter-remote communication (e.g., shared state via signals or a shared service)
-- Set up CI/CD pipeline
-- Deploy remotes independently to different servers/CDNs
-- Add a new remote as a practice exercise
+- **Cross-MFE state sharing**: Wire up dark mode toggle in settings so it affects the shell sidebar -- tests how singleton services share state across federation boundaries at runtime
+- **Storybook for shared UI**: Add Storybook to `libs/shared/ui` to create a living component catalog independent of any MFE
+- **Error boundaries & loading states**: Add `@defer` with `@loading` and `@error` blocks for resilience when a remote is unavailable
+- **Sub-routing within remotes**: Add nested routes (e.g., analytics/overview, analytics/reports) to learn how shell and remote routers cooperate
+- **Real HTTP integration**: Replace mock signal data with actual API calls in data-access services
+- **Unit tests**: Test shared UI components and domain services
+- **E2e tests**: Use the Playwright scaffolds to test cross-MFE navigation
+- **CI/CD pipeline**: Build and deploy remotes independently

@@ -1,1 +1,1 @@
-export * from './lib/user-profile-data-access/user-profile-data-access';
+// User data is provided by @mfe-dashboard/shared/auth (AuthService)

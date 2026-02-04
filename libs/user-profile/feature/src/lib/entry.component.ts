@@ -1,88 +1,94 @@
-import { Component } from '@angular/core';
+import { Component, inject, computed } from '@angular/core';
+import { AuthService } from '@mfe-dashboard/shared/auth';
+import { CardComponent, PageHeaderComponent } from '@mfe-dashboard/shared/ui';
 
 @Component({
   selector: 'lib-user-profile-entry',
   standalone: true,
+  imports: [CardComponent, PageHeaderComponent],
   template: `
     <div class="profile-container">
-      <h2>User Profile</h2>
-      <div class="profile-card">
-        <div class="avatar">JD</div>
-        <div class="profile-details">
-          <div class="detail-row">
-            <span class="label">Name</span>
-            <span class="value">Jane Doe</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Email</span>
-            <span class="value">jane.doe&#64;example.com</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Role</span>
-            <span class="value">Administrator</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Department</span>
-            <span class="value">Engineering</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Joined</span>
-            <span class="value">March 2023</span>
+      <lib-page-header title="User Profile" />
+      <lib-card>
+        <div class="profile-layout">
+          <div class="avatar">{{ initials() }}</div>
+          <div class="profile-details">
+            <div class="detail-row">
+              <span class="label">Name</span>
+              <span class="value">{{ user().name }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Email</span>
+              <span class="value">{{ user().email }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Role</span>
+              <span class="value">{{ user().role }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Department</span>
+              <span class="value">{{ user().department }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Joined</span>
+              <span class="value">{{ user().joinedDate }}</span>
+            </div>
           </div>
         </div>
-      </div>
+      </lib-card>
     </div>
   `,
-  styles: [
-    `
-      .profile-container {
-        padding: 24px;
-      }
-      h2 {
-        margin: 0 0 24px 0;
-        color: #1a1a2e;
-      }
-      .profile-card {
-        background: white;
-        border-radius: 12px;
-        padding: 32px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        display: flex;
-        gap: 32px;
-        align-items: flex-start;
-      }
-      .avatar {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        background: #6c63ff;
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 28px;
-        font-weight: 600;
-        flex-shrink: 0;
-      }
-      .profile-details {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-        flex: 1;
-      }
-      .detail-row {
-        display: flex;
-        gap: 16px;
-      }
-      .label {
-        font-weight: 600;
-        color: #666;
-        min-width: 120px;
-      }
-      .value {
-        color: #1a1a2e;
-      }
-    `,
-  ],
+  styles: [`
+    .profile-container {
+      padding: var(--spacing-lg);
+    }
+    .profile-layout {
+      display: flex;
+      gap: var(--spacing-xl);
+      align-items: flex-start;
+    }
+    .avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: var(--radius-full);
+      background: var(--color-primary);
+      color: var(--color-text-on-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--font-size-stat);
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .profile-details {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-base);
+      flex: 1;
+    }
+    .detail-row {
+      display: flex;
+      gap: var(--spacing-base);
+    }
+    .label {
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      min-width: 120px;
+    }
+    .value {
+      color: var(--color-text-primary);
+    }
+  `],
 })
-export class EntryComponent {}
+export class EntryComponent {
+  private auth = inject(AuthService);
+
+  protected user = this.auth.currentUser;
+  protected initials = computed(() => {
+    const name = this.user().name;
+    return name
+      .split(' ')
+      .map(part => part[0])
+      .join('');
+  });
+}

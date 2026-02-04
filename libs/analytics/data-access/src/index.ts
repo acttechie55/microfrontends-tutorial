@@ -1,1 +1,1 @@
-export * from './lib/analytics-data-access/analytics-data-access';
+export { AnalyticsService } from './lib/analytics.service';

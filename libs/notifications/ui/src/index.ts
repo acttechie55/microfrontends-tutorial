@@ -1,1 +1,1 @@
-export * from './lib/notifications-ui/notifications-ui';
+// Notifications domain uses shared UI components directly

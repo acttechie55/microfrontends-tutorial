@@ -1,1 +1,1 @@
-export * from './lib/analytics-ui/analytics-ui';
+export { BarChartComponent } from './lib/bar-chart/bar-chart.component';

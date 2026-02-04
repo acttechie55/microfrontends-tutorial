@@ -1,1 +1,1 @@
-export * from './lib/user-profile-ui/user-profile-ui';
+// User profile domain uses shared UI components directly

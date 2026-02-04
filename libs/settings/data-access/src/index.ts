@@ -1,1 +1,1 @@
-export * from './lib/settings-data-access/settings-data-access';
+export { SettingsService } from './lib/settings.service';

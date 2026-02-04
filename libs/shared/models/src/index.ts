@@ -1,3 +1,3 @@
-export { User } from './lib/user.model';
-export { Notification } from './lib/notification.model';
-export { StatCard } from './lib/analytics.model';
+export type { User } from './lib/user.model';
+export type { Notification } from './lib/notification.model';
+export type { StatCard, MonthlyData } from './lib/analytics.model';
