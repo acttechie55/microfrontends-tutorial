@@ -1,4 +1,4 @@
-# MFE Dashboard
+# Angular MicroFrontEnds Dashboard
 
 A learning project for exploring **Angular Micro Frontends with Native Federation** in an Nx monorepo.
 
