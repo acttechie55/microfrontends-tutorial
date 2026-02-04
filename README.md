@@ -1,96 +1,158 @@
-# MfeDashboard
+# MFE Dashboard
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+A learning project for exploring **Angular Micro Frontends with Native Federation** in an Nx monorepo.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+## Background
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/intro#learn-nx?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+I built this project to teach myself Angular Micro Frontends. I have 10+ years of experience building classic Angular applications (monolithic, single-repo, NgModule-based), but I had never worked with Module Federation or micro frontend architecture before.
 
-## Run tasks
+My goal was to start from zero, build a working micro frontend dashboard, and then restructure it into a production-grade folder layout with domain libraries and module boundary enforcement -- learning each concept along the way.
 
-To run tasks with Nx use:
+## What This Project Demonstrates
 
-```sh
-npx nx <target> <project-name>
+- **Native Federation** (`@angular-architects/native-federation`) for runtime module loading between independently built Angular apps
+- **Host/Remote architecture** -- a shell app that dynamically loads 4 remote micro frontends at runtime
+- **Nx monorepo** with `apps/` + `libs/` structure following domain-driven library organization
+- **Module boundary enforcement** via ESLint `@nx/enforce-module-boundaries` with scope and type tags
+- **Standalone components** (Angular 21, no NgModules)
+
+## Tech Stack
+
+| Tool | Version |
+|---|---|
+| Angular | 21.1 |
+| Nx | 22.4.4 |
+| Native Federation | 21.1 |
+| TypeScript | 5.9 |
+| Node | 22+ |
+
+## Architecture
+
+```
+Shell (host, port 4200)
+  |
+  |-- loadRemoteModule('user-profile')  --> port 4201
+  |-- loadRemoteModule('analytics')     --> port 4202
+  |-- loadRemoteModule('settings')      --> port 4203
+  |-- loadRemoteModule('notifications') --> port 4204
 ```
 
-For example:
+The shell app renders a sidebar with navigation links. When a user clicks a link, the shell uses `loadRemoteModule()` to fetch the remote's routes at runtime from its `remoteEntry.json`. Each remote is a fully independent Angular application that can also run standalone.
 
-```sh
-npx nx build myproject
+## Project Structure
+
+```
+mfe-dashboard/
+  apps/
+    shell/                    # Host app - sidebar + router-outlet
+    user-profile/             # Remote - profile card UI
+    analytics/                # Remote - stat cards + bar chart
+    settings/                 # Remote - toggle switches, dropdowns
+    notifications/            # Remote - notification page
+    *-e2e/                    # Playwright e2e test apps
+  libs/
+    shared/
+      ui/                     # Reusable presentational components
+      models/                 # TypeScript interfaces (User, Notification, StatCard)
+      util/                   # Formatting helpers
+      data-access/            # Base API service
+      auth/                   # Auth service with mock user signal
+    user-profile/
+      feature/                # Entry component for user-profile remote
+      ui/                     # UI components scoped to user-profile
+      data-access/            # Data services scoped to user-profile
+    analytics/
+      feature/                # Entry component for analytics remote
+      ui/
+      data-access/
+    settings/
+      feature/                # Entry component for settings remote
+      ui/
+      data-access/
+    notifications/
+      feature/                # Entry component for notifications remote
+      ui/
+      data-access/
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+## Getting Started
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+### Prerequisites
 
-## Add new projects
+- Node.js 22+
+- npm
 
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
-
-To install a new plugin you can use the `nx add` command. Here's an example of adding the React plugin:
-```sh
-npx nx add @nx/react
-```
-
-Use the plugin's generator to create new projects. For example, to create a new React app or library:
+### Install
 
 ```sh
-# Generate an app
-npx nx g @nx/react:app demo
-
-# Generate a library
-npx nx g @nx/react:lib some-lib
+npm install
 ```
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
-
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Set up CI!
-
-### Step 1
-
-To connect to Nx Cloud, run the following command:
+### Run All Apps
 
 ```sh
-npx nx connect
+npm run start:all
 ```
 
-Connecting to Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
+This kills any stale processes on ports 4200-4204, then starts all 5 apps in parallel.
 
-- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-### Step 2
-
-Use the following command to configure a CI workflow for your workspace:
+### Run Individual Apps
 
 ```sh
-npx nx g ci-workflow
+# Shell (host)
+npx nx serve shell
+
+# Any remote
+npx nx serve user-profile
+npx nx serve analytics
+npx nx serve settings
+npx nx serve notifications
 ```
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+Note: The shell expects all 4 remotes to be running. If a remote isn't running, navigating to its route will show an error in the console.
 
-## Install Nx Console
+### Build
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
+```sh
+# Build all
+npx nx run-many --target=build --projects=shell,user-profile,analytics,settings,notifications
 
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+# Build one
+npx nx build shell --configuration=production
+```
 
-## Useful links
+### Lint
 
-Learn more:
+```sh
+npx nx run-many --target=lint
+```
 
-- [Learn more about this workspace setup](https://nx.dev/getting-started/intro#learn-nx?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+This runs ESLint across all 27 projects, including module boundary checks.
 
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## Module Boundary Rules
+
+Each project has `scope` and `type` tags in its `project.json`. The ESLint config enforces:
+
+- **Type constraints**: `app` -> `feature` -> `ui`/`data-access` -> `models`/`util` (no reverse dependencies)
+- **Scope constraints**: Each domain (e.g., `analytics`) can only import from its own scope + `shared`. No cross-domain imports allowed.
+
+Example: `libs/analytics/feature` can import from `libs/analytics/ui`, `libs/shared/models`, but NOT from `libs/settings/feature`.
+
+## Key Concepts Learned
+
+1. **Federation init before bootstrap** -- `initFederation()` must resolve before Angular bootstraps, hence the `main.ts` -> `bootstrap.ts` split
+2. **remoteEntry.json** -- each remote generates this manifest describing its exposed modules and shared dependencies
+3. **federation.manifest.json** -- the host's runtime map of remote names to their URLs
+4. **`shareAll({ singleton: true })`** -- ensures Angular, RxJS, and other framework packages are shared as singletons to avoid duplicate instances
+5. **Dynamic host** -- the shell loads remote URLs from a manifest file, not hardcoded in the build config
+6. **Independent deployability** -- each remote can be built and deployed separately; the shell discovers it at runtime
+
+## Ports
+
+| App | Port |
+|---|---|
+| Shell | 4200 |
+| User Profile | 4201 |
+| Analytics | 4202 |
+| Settings | 4203 |
+| Notifications | 4204 |

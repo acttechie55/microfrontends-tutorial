@@ -1,0 +1,9 @@
+{
+  "name": "user-profile-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/user-profile-e2e/src",
+  "implicitDependencies": ["user-profile"],
+  "// targets": "to see all targets run: nx show project user-profile-e2e --web",
+  "targets": {}
+}

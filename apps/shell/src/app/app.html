@@ -1,0 +1,28 @@
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h1>Dashboard</h1>
+    </div>
+    <nav>
+      <a routerLink="/user-profile" routerLinkActive="active">
+        <span class="nav-icon">&#9787;</span>
+        User Profile
+      </a>
+      <a routerLink="/analytics" routerLinkActive="active">
+        <span class="nav-icon">&#9776;</span>
+        Analytics
+      </a>
+      <a routerLink="/settings" routerLinkActive="active">
+        <span class="nav-icon">&#9881;</span>
+        Settings
+      </a>
+      <a routerLink="/notifications" routerLinkActive="active">
+        <span class="nav-icon">&#9993;</span>
+        Notifications
+      </a>
+    </nav>
+  </aside>
+  <main class="content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

@@ -1,0 +1,6 @@
+{
+  "user-profile": "http://localhost:4201/remoteEntry.json",
+  "analytics": "http://localhost:4202/remoteEntry.json",
+  "settings": "http://localhost:4203/remoteEntry.json",
+  "notifications": "http://localhost:4204/remoteEntry.json"
+}

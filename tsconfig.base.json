@@ -1,0 +1,54 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2015",
+    "module": "esnext",
+    "lib": ["es2020", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@mfe-dashboard/shared/ui": ["libs/shared/ui/src/index.ts"],
+      "@mfe-dashboard/shared/models": ["libs/shared/models/src/index.ts"],
+      "@mfe-dashboard/shared/util": ["libs/shared/util/src/index.ts"],
+      "@mfe-dashboard/shared/data-access": [
+        "libs/shared/data-access/src/index.ts"
+      ],
+      "@mfe-dashboard/shared/auth": ["libs/shared/auth/src/index.ts"],
+      "@mfe-dashboard/user-profile/feature": [
+        "libs/user-profile/feature/src/index.ts"
+      ],
+      "@mfe-dashboard/user-profile/ui": ["libs/user-profile/ui/src/index.ts"],
+      "@mfe-dashboard/user-profile/data-access": [
+        "libs/user-profile/data-access/src/index.ts"
+      ],
+      "@mfe-dashboard/analytics/feature": [
+        "libs/analytics/feature/src/index.ts"
+      ],
+      "@mfe-dashboard/analytics/ui": ["libs/analytics/ui/src/index.ts"],
+      "@mfe-dashboard/analytics/data-access": [
+        "libs/analytics/data-access/src/index.ts"
+      ],
+      "@mfe-dashboard/settings/feature": ["libs/settings/feature/src/index.ts"],
+      "@mfe-dashboard/settings/ui": ["libs/settings/ui/src/index.ts"],
+      "@mfe-dashboard/settings/data-access": [
+        "libs/settings/data-access/src/index.ts"
+      ],
+      "@mfe-dashboard/notifications/feature": [
+        "libs/notifications/feature/src/index.ts"
+      ],
+      "@mfe-dashboard/notifications/ui": ["libs/notifications/ui/src/index.ts"],
+      "@mfe-dashboard/notifications/data-access": [
+        "libs/notifications/data-access/src/index.ts"
+      ]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}
